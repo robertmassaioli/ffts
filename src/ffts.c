@@ -53,11 +53,19 @@
 #endif
 
 void ffts_execute(ffts_plan_t *p, const void *  in, void *  out) {
+   printf("start execute\n");
 	p->transform(p, (const float *)in, (float *)out);
+   printf("stop execute\n");
+   for(int i = 0; i < 16; ++i)
+   {
+      printf("%d: %f\n", i, ((float*) out)[i]);
+   }
 }
 
 void ffts_free(ffts_plan_t *p) {
+   printf("start free\n");
 	p->destroy(p);
+   printf("end free\n");
 }
 
 void ffts_free_1d(ffts_plan_t *p) {

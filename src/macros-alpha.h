@@ -192,6 +192,7 @@ static inline V IMULI(int inv, V x)
 
 static inline V VLD(const void *s)
 {
+   printf("loading a value\n");
     V *d = (V *)s;
     return *d;
 }

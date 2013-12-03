@@ -38,6 +38,7 @@
 #endif
 
 void ffts_free_nd_real(ffts_plan_t *p) {
+   printf("Should not get here.\n");
 
 	int i;
 	for(i=0;i<p->rank;i++) {

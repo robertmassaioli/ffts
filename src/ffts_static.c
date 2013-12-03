@@ -33,6 +33,7 @@
 #include "ffts_static.h"
 
 void ffts_static_rec_i(ffts_plan_t *p, float *data, size_t N) {
+   printf("Static rec i\n");
 	if(N > 16) {
 		size_t N1 = N >> 1;
 		size_t N2 = N >> 2;
@@ -57,6 +58,7 @@ void ffts_static_rec_i(ffts_plan_t *p, float *data, size_t N) {
 
 }
 void ffts_static_rec_f(ffts_plan_t *p, float *data, size_t N) {
+   printf("Static rec f\n");
 	if(N > 16) {
 		size_t N1 = N >> 1;
 		size_t N2 = N >> 2;
@@ -82,6 +84,7 @@ void ffts_static_rec_f(ffts_plan_t *p, float *data, size_t N) {
 }
 
 void ffts_static_transform_f(ffts_plan_t *p, const void *in, void *out) {
+   printf("Static transform f\n");
 
 	if(__builtin_ctzl(p->N) & 1) 
 		neon_static_o_f(p, in, out);
@@ -92,6 +95,7 @@ void ffts_static_transform_f(ffts_plan_t *p, const void *in, void *out) {
 
 
 void ffts_static_transform_i(ffts_plan_t *p, const void *in, void *out) {
+   printf("Static transform i\n");
 
 	if(__builtin_ctzl(p->N) & 1) 
 		neon_static_o_i(p, in, out);

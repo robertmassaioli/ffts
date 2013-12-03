@@ -141,7 +141,12 @@ static inline void L_4_2(int inv,
 {
     V t0, t1, t2, t3, t4, t5, t6, t7;
 
-    t0 = VLD(i0);    t1 = VLD(i1);    t6 = VLD(i2);    t7 = VLD(i3);
+    printf("in L_4_2\n");
+    for(int i = 0; i < 16; ++i)
+    {
+       printf("%d: %f\n", i, i0[i]);
+    }
+    t0 = VLD(i0); printf("first ran\n");    t1 = VLD(i1);    t6 = VLD(i2);    t7 = VLD(i3);
     t2 = VBLEND(t6, t7);
     t3 = VBLEND(t7, t6);
     t4 = VADD(t0, t1);

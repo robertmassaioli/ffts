@@ -42,6 +42,8 @@
 
  void firstpass_16_f(ffts_plan_t *  p, const void *  in, void *  out)
 {
+   printf("firstpass 16 f\n");
+
     const data_t *din = (const data_t *)in;
     data_t *dout = (data_t *)out;
     V r0_1,r2_3,r4_5,r6_7,r8_9,r10_11,r12_13,r14_15;
@@ -58,6 +60,8 @@
 
  void firstpass_16_b(ffts_plan_t *  p, const void *  in, void *  out)
 {
+   printf("firstpass 16 b\n");
+
     const data_t *din = (const data_t *)in;
     data_t *dout = (data_t *)out;
     V r0_1,r2_3,r4_5,r6_7,r8_9,r10_11,r12_13,r14_15;
@@ -75,18 +79,36 @@
 
  void firstpass_8_f(ffts_plan_t *p, const void *in, void *out)
 {
+   printf("firstpass 8 f\n");
+
+    printf("break 8f zero\n");
     const data_t *din = (const data_t *)in;
+    printf("break 8f half\n");
     data_t *dout = (data_t *)out;
     V r0_1, r2_3, r4_5, r6_7;
+    printf("break 8f one\n");
     float *LUT8 = p->ws + p->ws_is[0];
 
+    printf("break 8f two\n");
+    printf("L_4_2 is at: %p\n", &L_4_2);
+    printf("din is %p\n", din);
+    printf("din[0] is %f\n", din[0]);
+    printf("din[1] is %f\n", din[1]);
+    printf("din[2] is %f\n", din[2]);
+    printf("din[4] is %f\n", *(din + 4));
+    printf("din[12] is %f\n", *(din + 12));
     L_4_2(0, din, din+8, din+4, din+12, &r0_1, &r2_3, &r4_5, &r6_7);
+    printf("break 8f three\n");
     K_N(0, VLD(LUT8), VLD(LUT8+4), &r0_1, &r2_3, &r4_5, &r6_7);
+    printf("break 8f four\n");
     S_4(r0_1,r2_3,r4_5,r6_7,dout+0,dout+4,dout+8,dout+12);
+    printf("break 8f five\n");
 }
 
  void firstpass_8_b(ffts_plan_t *p, const void *in, void *out)
 {
+   printf("firstpass 8 b\n");
+
     const data_t *din = (const data_t *)in;
     data_t *dout = (data_t *)out;
     V r0_1, r2_3, r4_5, r6_7;
@@ -100,6 +122,8 @@
 
  void firstpass_4_f(ffts_plan_t *p, const void *in, void *out)
 {
+   printf("firstpass 4 f\n");
+
     const data_t *din = (const data_t *)in;
     data_t *dout = (data_t *)out;
     cdata_t t0, t1, t2, t3, t4, t5, t6, t7;
@@ -121,6 +145,8 @@
 
  void firstpass_4_b(ffts_plan_t *p, const void *in, void *out)
 {
+   printf("firstpass 4 b\n");
+
     const data_t *din = (const data_t *)in;
     data_t *dout = (data_t *)out;
     cdata_t t0, t1, t2, t3, t4, t5, t6, t7;

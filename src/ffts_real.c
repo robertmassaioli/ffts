@@ -43,13 +43,22 @@ void ffts_free_1d_real(ffts_plan_t *p) {
 }
 
 void ffts_execute_1d_real(ffts_plan_t *p, const void *vin, void *vout) {
+   printf("The plan is %p\n", p);
+   printf("The plan buffer is %p\n", p->buf);
+   printf("The plans plans start at %p\n", p->plans);
+   printf("The plans plans transform is at %p\n", p->plans[0]->transform);
+   printf("The vector in is: %p\n", vin);
+   printf("The vector out is: %p\n", vout);
+
 	float *out = (float *)vout;
 	float *buf = (float *)p->buf;
 	float *A = p->A;
 	float *B = p->B;
+   printf("Break one\n");
 
 	p->plans[0]->transform(p->plans[0], vin, buf);
 
+   printf("Break two\n");
 	size_t N = p->N;
 	buf[N] = buf[0];
 	buf[N+1] = buf[1];
@@ -57,6 +66,7 @@ void ffts_execute_1d_real(ffts_plan_t *p, const void *vin, void *vout) {
 	float *p_buf0 = buf;
 	float *p_buf1 = buf + N - 2;
 	float *p_out = out;
+   printf("Break three\n");
 
 	size_t i;
 #ifdef __ARM_NEON__
@@ -101,6 +111,7 @@ void ffts_execute_1d_real(ffts_plan_t *p, const void *vin, void *vout) {
 												: "memory", "q8", "q9", "q10", "q11", "q12", "q13", "q14", "q15"
 												);
 #else
+   printf("Break four\n");
 	for(i=0;i<N/2;i++) {
 		out[2*i]   = buf[2*i]*A[2*i] - buf[2*i+1]*A[2*i+1] + buf[N-2*i]*B[2*i] + buf[N-2*i+1]*B[2*i+1];
 		out[2*i+1] = buf[2*i+1]*A[2*i] + buf[2*i]*A[2*i+1] + buf[N-2*i]*B[2*i+1] - buf[N-2*i+1]*B[2*i];
@@ -111,12 +122,16 @@ void ffts_execute_1d_real(ffts_plan_t *p, const void *vin, void *vout) {
 #endif	
 	}
 	
+   printf("Break five\n");
 	out[N] = buf[0] - buf[1];
 	out[N+1] = 0.0f;
 	
+   printf("Break six\n");
 }
 
 void ffts_execute_1d_real_inv(ffts_plan_t *p, const void *vin, void *vout) {
+   printf("1d real inv execute.\n");
+
 	float *out = (float *)vout;
 	float *in = (float *)vin;
 	float *buf = (float *)p->buf;
