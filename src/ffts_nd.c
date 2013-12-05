@@ -1,3 +1,5 @@
+// vim: set autoindent noexpandtab tabstop=3 shiftwidth=3:
+
 /*
  
  This file is part of FFTS -- The Fastest Fourier Transform in the South
@@ -38,13 +40,12 @@
 #endif
 
 void ffts_free_nd(ffts_plan_t *p) {
-
 	int i;
-	for(i=0;i<p->rank;i++) {
-		
+	for(i = 0; i < p->rank; i++) {
 		ffts_plan_t *x = p->plans[i];
+
 		int k;
-		for(k=0;k<i;k++) {
+		for(k = 0; k < i; k++) {
 			if(p->Ms[i] == p->Ms[k]) x = NULL;
 		}
 		
@@ -58,8 +59,10 @@ void ffts_free_nd(ffts_plan_t *p) {
 	free(p->transpose_buf);
 	free(p);
 }
+
 #define TSIZE 8
 #include <string.h>
+
 void ffts_transpose(uint64_t *in, uint64_t *out, int w, int h, uint64_t *buf) {
 
 #ifdef HAVE_NEON 
@@ -218,20 +221,21 @@ void ffts_transpose(uint64_t *in, uint64_t *out, int w, int h, uint64_t *buf) {
 }
 
 void ffts_execute_nd(ffts_plan_t *p, const void *  in, void *  out) {
-
 	uint64_t *din = (uint64_t *)in;
 	uint64_t *buf = p->buf;
 	uint64_t *dout = (uint64_t *)out;
 
 	size_t i,j;
-	for(i=0;i<p->Ns[0];i++) {
-		p->plans[0]->transform(p->plans[0], din + (i * p->Ms[0]), buf + (i * p->Ms[0]));	
+	for(i = 0; i < p->Ns[0]; i++) {
+		size_t offset = i * p->Ms[0];
+		p->plans[0]->transform(p->plans[0], din + offset, buf + offset);	
 	}
 	ffts_transpose(buf, dout, p->Ms[0], p->Ns[0], p->transpose_buf);	
 
-	for(i=1;i<p->rank;i++) {
-		for(j=0;j<p->Ns[i];j++) { 
-			p->plans[i]->transform(p->plans[i], dout + (j * p->Ms[i]), buf + (j * p->Ms[i]));	
+	for(i = 1; i < p->rank; i++) {
+		for(j = 0; j < p->Ns[i]; j++) { 
+			size_t offset = j * p->Ms[i];
+			p->plans[i]->transform(p->plans[i], dout + offset, buf + offset);	
 		}
 		ffts_transpose(buf, dout, p->Ms[i], p->Ns[i], p->transpose_buf);	
 	}
@@ -249,26 +253,34 @@ ffts_plan_t *ffts_init_nd(int rank, size_t *Ns, int sign) {
 	p->Ns = malloc(sizeof(size_t) * rank);
 	p->Ms = malloc(sizeof(size_t) * rank);
 	p->plans = malloc(sizeof(ffts_plan_t **) * rank);
+
+	// Copy the dimensions sizes and calculate the volume to decide the size of the buffer
+	// required
 	int i;
-	for(i=0;i<rank;i++) {
+	for(i = 0; i < rank; i++) {
 		p->Ns[i] = Ns[i];
 		vol *= Ns[i];	
 	}
 	p->buf = valloc(sizeof(float) * 2 * vol);
 
-	for(i=0;i<rank;i++) {
+	// Create a 1d plan for every dimension
+	for(i=0; i < rank; i++) {
+		// Calculate the number of elements on this layer
 		p->Ms[i] = vol / p->Ns[i];
 
+		// For plans of the same size in a single dimension, reuse them.
 		p->plans[i] = NULL;
 		int k;
-		for(k=0;k<i;k++) {
-			if(p->Ms[k] == p->Ms[i]) 
+		for(k=0; k<i; k++) {
+			if(p->Ms[k] == p->Ms[i]) {
 				p->plans[i] = p->plans[k];
+         }
 		}
 
 		if(!p->plans[i]) p->plans[i] = ffts_init_1d(p->Ms[i], sign); 
 	}
 
+	// TODO how is this computed? What do the magic 8's mean?
 	p->transpose_buf = valloc(sizeof(float) * 2 * 8 * 8);
 	return p;
 }
