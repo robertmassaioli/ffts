@@ -58,7 +58,7 @@ void ffts_execute_1d_real(ffts_plan_t *p, const void *vin, void *vout) {
 	float *p_buf1 = buf + N - 2;
 	float *p_out = out;
 
-	size_t i;
+	size_t i, index;
 #ifdef __ARM_NEON__
 	for(i=0;i<N/2;i+=2) {
 	__asm__ __volatile__ ("vld1.32 {q8},  [%[pa], :128]!\n\t"
@@ -102,8 +102,10 @@ void ffts_execute_1d_real(ffts_plan_t *p, const void *vin, void *vout) {
 												);
 #else
 	for(i=0;i<N/2;i++) {
-		out[2*i]   = buf[2*i]*A[2*i] - buf[2*i+1]*A[2*i+1] + buf[N-2*i]*B[2*i] + buf[N-2*i+1]*B[2*i+1];
-		out[2*i+1] = buf[2*i+1]*A[2*i] + buf[2*i]*A[2*i+1] + buf[N-2*i]*B[2*i+1] - buf[N-2*i+1]*B[2*i];
+      index = 2 * i;
+
+		out[index] = buf[index] * A[index] - buf[index + 1] * A[index + 1] + buf[N - index] * B[index] + buf[N - index + 1] * B[index + 1];
+		out[index + 1] = buf[index + 1] * A[index] + buf[index] * A[index + 1] + buf[N - index] * B[index + 1] - buf[N - index + 1] * B[index];
 
 //	out[2*N-2*i] = out[2*i];
 //	out[2*N-2*i+1] = -out[2*i+1];
@@ -202,23 +204,33 @@ ffts_plan_t *ffts_init_1d_real(size_t N, int sign) {
 	p->A = valloc(sizeof(float) * N);
 	p->B = valloc(sizeof(float) * N);
 
-  if(sign < 0) {
-		int i;
-		for (i = 0; i < N/2; i++) {
-			p->A[2 * i]     = 0.5 * (1.0 - sin (2.0f * PI / (double) (N) * (double) i));
-			p->A[2 * i + 1] = 0.5 * (-1.0 * cos (2.0f * PI / (double) (N) * (double) i));
-			p->B[2 * i]     = 0.5 * (1.0 + sin (2.0f * PI / (double) (N) * (double) i));
-			p->B[2 * i + 1] = 0.5 * (1.0 * cos (2.0f * PI / (double) (N) * (double) i));
-		}
-	}else{
-		int i;
-		for (i = 0; i < N/2; i++) {
-			p->A[2 * i]     = 1.0 * (1.0 - sin (2.0f * PI / (double) (N) * (double) i));
-			p->A[2 * i + 1] = 1.0 * (-1.0 * cos (2.0f * PI / (double) (N) * (double) i));
-			p->B[2 * i]     = 1.0 * (1.0 + sin (2.0f * PI / (double) (N) * (double) i));
-			p->B[2 * i + 1] = 1.0 * (1.0 * cos (2.0f * PI / (double) (N) * (double) i));
-		}
-  }
+   double factor = 2.0f * PI / (double) (N);
+   if(sign < 0) {
+      int i, offset;
+      double movingFactor;
+
+      for (i = 0; i < N/2; i++) {
+         offset = 2 * i;
+         movingFactor = factor * (double) i;
+         p->A[offset]     = 0.5 * (1.0 - sin (movingFactor));
+         p->A[offset + 1] = 0.5 * (-1.0 * cos (movingFactor));
+         p->B[offset]     = 0.5 * (1.0 + sin (movingFactor));
+         p->B[offset + 1] = 0.5 * (1.0 * cos (movingFactor));
+      }
+   }else{
+      int i, offset;
+      double movingFactor;
+
+      for (i = 0; i < N/2; i++) {
+         offset = 2 * i;
+         movingFactor = factor * (double) i;
+
+         p->A[offset]     = 1.0 * (1.0 - sin (movingFactor));
+         p->A[offset + 1] = 1.0 * (-1.0 * cos (movingFactor));
+         p->B[offset]     = 1.0 * (1.0 + sin (movingFactor));
+         p->B[offset + 1] = 1.0 * (1.0 * cos (movingFactor));
+      }
+   }
 	
 	return p;
 }

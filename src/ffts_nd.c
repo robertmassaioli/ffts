@@ -223,15 +223,17 @@ void ffts_execute_nd(ffts_plan_t *p, const void *  in, void *  out) {
 	uint64_t *buf = p->buf;
 	uint64_t *dout = (uint64_t *)out;
 
-	size_t i,j;
+	size_t i,j, offset;
 	for(i=0;i<p->Ns[0];i++) {
-		p->plans[0]->transform(p->plans[0], din + (i * p->Ms[0]), buf + (i * p->Ms[0]));	
+		offset = i * p->Ms[0];
+		p->plans[0]->transform(p->plans[0], din + offset, buf + offset);	
 	}
 	ffts_transpose(buf, dout, p->Ms[0], p->Ns[0], p->transpose_buf);	
 
 	for(i=1;i<p->rank;i++) {
 		for(j=0;j<p->Ns[i];j++) { 
-			p->plans[i]->transform(p->plans[i], dout + (j * p->Ms[i]), buf + (j * p->Ms[i]));	
+			offset = j * p->Ms[i];
+			p->plans[i]->transform(p->plans[i], dout + offset, buf + offset);	
 		}
 		ffts_transpose(buf, dout, p->Ms[i], p->Ns[i], p->transpose_buf);	
 	}
